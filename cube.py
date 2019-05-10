@@ -1,15 +1,15 @@
 #!/usr/bin/python
-import smbus
-import math
-import web
-import socket
-import sys
+import smbus	# Εισαγωγή βιβλιοθήκης για την εισαγωγή ήχου
+import math	# Εισαγωγή βιβλιοθήκης για μαθηματικές σχέσεις
+import web	# Εισαγωγή βιβλιοθήκης για Ιντερνετ
+import socket	# Εισαγωγή βιβλιοθήκης για read(), write() επιλογές 
+import sys	# Εισαγωγή βιβλιοθήκης για παραμέτρους συστήματος
 
-import os
+import os	# Εισαγωγή βιβλιοθήκης για κλήση εντολών στο λειτουργικό σύστημα
 #Date and time module
-import time
+import time	# Εισαγωγή βιβλιοθήκης για έξοδο στοιχείων χρόνου
 #Music import
-from pygame import mixer
+from pygame import mixer	# Εισαγωγή βιβλιοθήκης για αναπαραγωγής μουσικής
 
 
 # Power management registers
@@ -21,6 +21,7 @@ accel_scale = 16384.0
 address = 0x68  # This is the address value read via the i2cdetect command
 bus = smbus.SMBus(1)  # or bus = smbus.SMBus(1) for Revision 2 boards
 
+# Συνάρτηση αξιοποίησης δεδομένων από αισθητήρα
 def read_all():
     raw_gyro_data = bus.read_i2c_block_data(address, 0x43, 6)
     raw_accel_data = bus.read_i2c_block_data(address, 0x3b, 6)
@@ -34,25 +35,26 @@ def read_all():
     accel_scaled_z = twos_compliment((raw_accel_data[4] << 8) + raw_accel_data[5]) / accel_scale
 
     return (gyro_scaled_x, gyro_scaled_y, gyro_scaled_z, accel_scaled_x, accel_scaled_y, accel_scaled_z)
-    
+ 
+	
 def twos_compliment(val):
     if (val >= 0x8000):
         return -((65535 - val) + 1)
     else:
         return val
-
+# Συνάρτηση μέτρησης απόστασης
 def dist(a, b):
     return math.sqrt((a * a) + (b * b))
-
+# Συνάρτηση κατακόρυφης περιστροφής
 def get_y_rotation(x,y,z):
     radians = math.atan2(x, dist(y,z))
     return math.degrees(radians)
-
+# Συνάρτηση οριζόντιας περιστροφής
 def get_x_rotation(x,y,z):
     radians = math.atan2(y, dist(x,z))
     return math.degrees(radians)
 
-
+# Συνάρτηση ηχητικού μηνύματος
 def speak(msg):
 	os.system('espeak " ' + msg +'" --stdout | aplay -D sysdefault:CARD=0');
 	print(msg);
